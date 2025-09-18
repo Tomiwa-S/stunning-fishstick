@@ -1,13 +1,37 @@
-  name: Setup SSH
-  uses: webfactory/ssh-agent@v0.9.0
-  with:
-    ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+name: Deploy to EC2
 
-  name: Deploy to EC2
-  run: |
-    ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-      cd /var/www/myapp   # adjust to your app directory
-      git pull origin main
-      npm install --production
-      pm2 restart myapp
-    EOF
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Deploy fresh code to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e
+            cd /var/www/myapp
+
+            # If repo not present, clone it
+            if [ ! -d ".git" ]; then
+              git clone https://github.com/<your-username>/<your-repo>.git .
+            else
+              git fetch origin
+              git reset --hard origin/main
+            fi
+
+            npm install --production
+            pm2 restart myapp || pm2 start npm --name myapp -- start
+          EOF
