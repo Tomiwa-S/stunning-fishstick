@@ -26,7 +26,7 @@ jobs:
 
             # If repo not present, clone it
             if [ ! -d ".git" ]; then
-              git clone https://github.com/<your-username>/<your-repo>.git .
+              git clone https://github.com/Tomiwa-S/stunning-fishstick.git .
             else
               git fetch origin
               git reset --hard origin/main
