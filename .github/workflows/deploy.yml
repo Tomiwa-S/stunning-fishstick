@@ -33,5 +33,5 @@ jobs:
             fi
 
             npm install --production
-            PORT=80 pm2 restart myapp || pm2 start npm --name myapp -- start
+            PORT=80 HOST=0.0.0.0 pm2 restart myapp || pm2 start npm --name myapp -- start
           EOF
